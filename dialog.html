@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <base target="_top">
+    <style>
+        body {
+            font-family: Arial;
+            margin: 0;
+            padding: 0;
+        }
+
+        textarea {
+            width: 100%;
+            height: 250px;
+            font-family: monospace;
+            font-size: 13px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+        }
+
+        .buttons {
+            margin-top: 10px;
+        }
+
+        #previewArea {
+            margin-top: 10px;
+            padding: 10px;
+            background: #f9f9f9;
+            border: 1px solid #ccc;
+            height: 250px;
+            overflow-y: scroll;
+            white-space: pre-wrap;
+            font-family: Arial;
+        }
+
+        .tab {
+            margin: 10px 0;
+        }
+
+        .tab button {
+            padding: 8px 12px;
+            margin-right: 5px;
+        }
+
+        .active-tab {
+            font-weight: bold;
+            background: #ddd;
+        }
+
+        /* Loading overlay style */
+        #loadingOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+
+        #loadingOverlay span {
+            background: #fff;
+            padding: 10px 20px;
+            border: 1px solid #ccc;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            font-size: 16px;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+
+<body>
+    <div class="tab">
+        <button id="editTab" class="active-tab" onclick="showTab('edit')">✏️ Edit</button>
+        <button id="previewTab" onclick="showTab('preview')">👁️ Preview</button>
+    </div>
+
+    <div id="editView">
+        <textarea id="markdownInput" placeholder="Paste your Markdown content here..."></textarea>
+        <div class="buttons">
+            <button onclick="generateSlides()">📤 Generate Slides</button>
+        </div>
+    </div>
+
+    <div id="previewView" style="display:none;">
+        <div id="previewArea">(Preview will be shown here)</div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay">
+        <span>Generating slides, please wait...</span>
+    </div>
+
+    <script>
+        function showTab(tab) {
+            document.getElementById("editView").style.display = tab === 'edit' ? 'block' : 'none';
+            document.getElementById("previewView").style.display = tab === 'preview' ? 'block' : 'none';
+            document.getElementById("editTab").classList.toggle('active-tab', tab === 'edit');
+            document.getElementById("previewTab").classList.toggle('active-tab', tab === 'preview');
+            if (tab === 'preview') updatePreview();
+        }
+
+        function updatePreview() {
+            const md = document.getElementById("markdownInput").value;
+            const html = marked.parse(md);
+            document.getElementById("previewArea").innerHTML = html;
+        }
+
+        function generateSlides() {
+            // Show loading overlay
+            document.getElementById("loadingOverlay").style.display = "flex";
+            const md = document.getElementById("markdownInput").value;
+            google.script.run.withSuccessHandler(function (msg) {
+                alert(msg);
+                // Hide loading overlay when finished
+                document.getElementById("loadingOverlay").style.display = "none";
+                google.script.host.close();
+            }).convertMarkdownToSlides(md);
+        }
+    </script>
+</body>
+
+</html>
